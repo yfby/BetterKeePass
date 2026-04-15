@@ -6,37 +6,37 @@ A lightweight KeePass password manager built with Tauri + React + Rust.
 
 ### Core Functionality
 
-- [ ] **Open Database** - Select `.kdbx` file via native file dialog
-- [ ] **Unlock Database** - Enter master password to decrypt
-- [ ] **Close Database** - Lock/logout from current database
+- [x] **Open Database** - Select `.kdbx` file via native file dialog
+- [x] **Unlock Database** - Enter master password to decrypt
+- [x] **Close Database** - Lock/logout from current database
 
 ### View Entries
 
-- [ ] **List Entries** - Display all password entries
-- [ ] **Entry Details** - Show title, username, URL, notes
-- [ ] **Password Toggle** - Show/hide password visibility
-- [ ] **Search** - Filter entries by title/username/URL
+- [x] **List Entries** - Display all password entries
+- [x] **Entry Details** - Show title, username, URL, notes
+- [x] **Password Toggle** - Show/hide password visibility
+- [x] **Search** - Filter entries by title/username/URL
 
 ### Manage Entries
 
-- [ ] **Add Entry** - Create new password entry
+- [x] **Add Entry** - Create new password entry
   - Title (required)
   - Username
   - Password
   - URL
   - Notes
-- [ ] **Edit Entry** - Modify existing entry
-- [ ] **Delete Entry** - Remove entry with confirmation
+- [x] **Edit Entry** - Modify existing entry
+- [x] **Delete Entry** - Remove entry with confirmation
 
 ### Clipboard
 
-- [ ] **Copy Password** - One-click copy to clipboard
-- [ ] **Copy Username** - One-click copy to clipboard
-- [ ] **Auto-Clear** - Clear clipboard after 30 seconds
+- [x] **Copy Password** - One-click copy to clipboard
+- [x] **Copy Username** - One-click copy to clipboard
+- [x] **Auto-Clear** - Clear clipboard after 30 seconds
 
 ### Persistence
 
-- [ ] **Save Database** - Write changes to `.kdbx` file
+- [ ] **Save Database** - Write changes to `.kdbx` file (keepass crate has experimental write support)
 - [ ] **Auto-Save** - Save on every modification
 
 ---
@@ -60,3 +60,7 @@ pnpm tauri dev
 # Build for production
 pnpm tauri build
 ```
+
+## Note on Persistence
+
+The underlying [keepass](https://crates.io/crates/keepass) crate has **experimental** write support for KDBX4 files. Full save functionality will be enabled once the crate's write API stabilizes.
