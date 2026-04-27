@@ -13,16 +13,6 @@ interface EntryData {
   uuid: string;
 }
 
-interface NewEntryData {
-  title: string;
-  username: string;
-  password: string;
-  url: string;
-  notes: string;
-}
-
-type ModalMode = "closed" | "add" | "edit";
-
 function App() {
   const [isUnlocked, setIsUnlocked] = useState<boolean>(false);
   const [filePath, setFilePath] = useState<string>("");
@@ -32,15 +22,6 @@ function App() {
   const [selectedEntry, setSelectedEntry] = useState<EntryData | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
-  const [modalMode, setModalMode] = useState<ModalMode>("closed");
-  const [editForm, setEditForm] = useState<NewEntryData>({
-    title: "",
-    username: "",
-    password: "",
-    url: "",
-    notes: "",
-  });
-  const [deleteConfirm, setDeleteConfirm] = useState<boolean>(false);
 
   let clipboardTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -101,58 +82,6 @@ function App() {
     }
   }
 
-  function openAddModal() {
-    setEditForm({ title: "", username: "", password: "", url: "", notes: "" });
-    setModalMode("add");
-  }
-
-  function openEditModal() {
-    if (selectedEntry) {
-      setEditForm({
-        title: selectedEntry.title,
-        username: selectedEntry.username,
-        password: selectedEntry.password,
-        url: selectedEntry.url,
-        notes: selectedEntry.notes,
-      });
-      setModalMode("edit");
-    }
-  }
-
-  function closeModal() {
-    setModalMode("closed");
-    setDeleteConfirm(false);
-  }
-
-  async function handleSave() {
-    try {
-      if (modalMode === "add") {
-        await invoke("add_entry", { entryData: editForm });
-      } else if (modalMode === "edit" && selectedEntry) {
-        await invoke("update_entry", { uuid: selectedEntry.uuid, entryData: editForm });
-      }
-      closeModal();
-      loadEntries();
-    } catch (e) {
-      console.error("Failed to save entry:", e);
-    }
-  }
-
-  async function handleDelete() {
-    if (selectedEntry && deleteConfirm) {
-      try {
-        await invoke("delete_entry", { uuid: selectedEntry.uuid });
-        setSelectedEntry(null);
-        closeModal();
-        loadEntries();
-      } catch (e) {
-        console.error("Failed to delete entry:", e);
-      }
-    } else {
-      setDeleteConfirm(true);
-    }
-  }
-
   const filteredEntries = entries.filter((entry) => {
     const query = searchQuery.toLowerCase();
     return (
@@ -163,162 +92,170 @@ function App() {
   });
 
   return (
-    <main className="container">
-      <h1>BetterKeePass</h1>
-
+    <main className="min-h-screen bg-bg-primary flex flex-col items-center px-4 pt-10">
       {!isUnlocked ? (
-        <>
-          <button onClick={openFile}>Open Database</button>
+        <div className="flex flex-col items-center justify-center min-h-[80vh] gap-6 w-full max-w-md">
+          <h1 className="text-3xl font-bold text-text-primary mb-4">
+            BetterKeePass
+          </h1>
+          <button
+            onClick={openFile}
+            className="px-6 py-3 bg-accent hover:bg-accent-hover text-white font-medium rounded-lg transition-colors cursor-pointer"
+          >
+            Open Database
+          </button>
 
           {filePath && (
-            <>
-              <p>Selected: {filePath}</p>
-              <div>
+            <div className="flex flex-col gap-4 w-full">
+              <p className="text-text-secondary text-sm break-all">
+                Selected: {filePath}
+              </p>
+              <div className="flex flex-col gap-3">
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter password..."
+                  className="w-full px-4 py-3 bg-bg-secondary text-text-primary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-text-secondary"
+                  onKeyDown={(e) => e.key === "Enter" && unlock()}
                 />
-                <button onClick={unlock}>Unlock</button>
-                {error && <p style={{ color: "red" }}>{error}</p>}
+                <button
+                  onClick={unlock}
+                  className="px-6 py-3 bg-accent hover:bg-accent-hover text-white font-medium rounded-lg transition-colors cursor-pointer"
+                >
+                  Unlock
+                </button>
+                {error && <p className="text-danger text-sm">{error}</p>}
               </div>
-            </>
+            </div>
           )}
-        </>
+        </div>
       ) : (
-        <>
-          <p>Database: {filePath}</p>
-          <button onClick={closeDatabase}>Close Database</button>
+        <div className="flex flex-col items-center gap-6 w-full max-w-lg">
+          <div className="flex items-center gap-4 w-full">
+            <p className="text-text-secondary text-sm truncate flex-1">
+              Database: {filePath}
+            </p>
+            <button
+              onClick={closeDatabase}
+              className="px-4 py-2 bg-bg-tertiary hover:bg-border text-text-primary text-sm rounded-lg transition-colors cursor-pointer"
+            >
+              Close Database
+            </button>
+          </div>
 
-          <div className="entries-section">
+          <div className="entries-section w-full">
             <input
               type="text"
               placeholder="Search entries..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
+              className="w-full px-4 py-3 bg-bg-secondary text-text-primary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-text-secondary mb-4"
             />
 
-            <div className="entries-header">
-              <h3>Entries ({filteredEntries.length})</h3>
-              <button onClick={openAddModal}>Add Entry</button>
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-lg font-semibold text-text-primary">
+                Entries ({filteredEntries.length})
+              </h3>
             </div>
 
-            <div className="entries-list">
+            <div className="max-h-72 overflow-y-auto border border-border rounded-lg mb-4">
               {filteredEntries.map((entry) => (
                 <div
                   key={entry.uuid}
-                  className={`entry-item ${selectedEntry?.uuid === entry.uuid ? "selected" : ""}`}
+                  className={`px-4 py-3 border-b border-border cursor-pointer transition-colors ${
+                    selectedEntry?.uuid === entry.uuid
+                      ? "bg-accent/20"
+                      : "hover:bg-bg-secondary"
+                  } last:border-b-0`}
                   onClick={() => {
                     setSelectedEntry(entry);
                     setPasswordVisible(false);
-                    setDeleteConfirm(false);
                   }}
                 >
-                  <div className="entry-title">{entry.title}</div>
-                  <div className="entry-username">{entry.username}</div>
+                  <div className="font-medium text-text-primary">
+                    {entry.title}
+                  </div>
+                  <div className="text-sm text-text-secondary">
+                    {entry.username}
+                  </div>
                 </div>
               ))}
             </div>
 
             {selectedEntry && (
-              <div className="entry-details">
-                <h3>{selectedEntry.title}</h3>
-                <div className="detail-row">
-                  <span className="detail-label">Username:</span>
-                  <span className="detail-value">{selectedEntry.username}</span>
-                  <button onClick={() => copyToClipboard(selectedEntry.username, "Username")}>
+              <div className="w-full p-5 bg-bg-secondary border border-border rounded-lg text-left">
+                <h3 className="text-xl font-semibold text-text-primary mb-4">
+                  {selectedEntry.title}
+                </h3>
+
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-text-secondary min-w-20 font-medium">
+                    Username:
+                  </span>
+                  <span className="text-text-primary flex-1 break-all">
+                    {selectedEntry.username}
+                  </span>
+                  <button
+                    onClick={() =>
+                      copyToClipboard(selectedEntry.username, "Username")
+                    }
+                    className="px-3 py-1.5 bg-bg-tertiary hover:bg-border text-text-primary text-sm rounded-lg transition-colors cursor-pointer"
+                  >
                     Copy
                   </button>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Password:</span>
-                  <span className="detail-value">
+
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-text-secondary min-w-20 font-medium">
+                    Password:
+                  </span>
+                  <span className="text-text-primary flex-1 break-all">
                     {passwordVisible ? selectedEntry.password : "••••••••"}
                   </span>
-                  <button onClick={() => setPasswordVisible(!passwordVisible)}>
+                  <button
+                    onClick={() => setPasswordVisible(!passwordVisible)}
+                    className="px-3 py-1.5 bg-bg-tertiary hover:bg-border text-text-primary text-sm rounded-lg transition-colors cursor-pointer"
+                  >
                     {passwordVisible ? "Hide" : "Show"}
                   </button>
-                  <button onClick={() => copyToClipboard(selectedEntry.password, "Password")}>
-                    Copy
-                  </button>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">URL:</span>
-                  <span className="detail-value">{selectedEntry.url}</span>
-                  <button onClick={() => copyToClipboard(selectedEntry.url, "URL")}>
-                    Copy
-                  </button>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Notes:</span>
-                  <span className="detail-value">{selectedEntry.notes}</span>
-                </div>
-                <div className="detail-actions">
-                  <button onClick={openEditModal}>Edit</button>
                   <button
-                    className={deleteConfirm ? "confirm-delete" : ""}
-                    onClick={handleDelete}
+                    onClick={() =>
+                      copyToClipboard(selectedEntry.password, "Password")
+                    }
+                    className="px-3 py-1.5 bg-bg-tertiary hover:bg-border text-text-primary text-sm rounded-lg transition-colors cursor-pointer"
                   >
-                    {deleteConfirm ? "Confirm Delete" : "Delete"}
+                    Copy
                   </button>
+                </div>
+
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-text-secondary min-w-20 font-medium">
+                    URL:
+                  </span>
+                  <span className="text-text-primary flex-1 break-all">
+                    {selectedEntry.url}
+                  </span>
+                  <button
+                    onClick={() => copyToClipboard(selectedEntry.url, "URL")}
+                    className="px-3 py-1.5 bg-bg-tertiary hover:bg-border text-text-primary text-sm rounded-lg transition-colors cursor-pointer"
+                  >
+                    Copy
+                  </button>
+                </div>
+
+                <div className="flex items-start gap-3 mb-4">
+                  <span className="text-text-secondary min-w-20 font-medium">
+                    Notes:
+                  </span>
+                  <span className="text-text-primary flex-1">
+                    {selectedEntry.notes}
+                  </span>
                 </div>
               </div>
             )}
           </div>
-
-          {modalMode !== "closed" && (
-            <div className="modal-overlay" onClick={closeModal}>
-              <div className="modal" onClick={(e) => e.stopPropagation()}>
-                <h3>{modalMode === "add" ? "Add Entry" : "Edit Entry"}</h3>
-                <div className="form-group">
-                  <label>Title:</label>
-                  <input
-                    type="text"
-                    value={editForm.title}
-                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Username:</label>
-                  <input
-                    type="text"
-                    value={editForm.username}
-                    onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Password:</label>
-                  <input
-                    type="text"
-                    value={editForm.password}
-                    onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>URL:</label>
-                  <input
-                    type="text"
-                    value={editForm.url}
-                    onChange={(e) => setEditForm({ ...editForm, url: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Notes:</label>
-                  <textarea
-                    value={editForm.notes}
-                    onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
-                  />
-                </div>
-                <div className="modal-actions">
-                  <button onClick={closeModal}>Cancel</button>
-                  <button onClick={handleSave}>Save</button>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
+        </div>
       )}
     </main>
   );
