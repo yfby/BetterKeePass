@@ -92,7 +92,7 @@ function App() {
   });
 
   return (
-    <main className="min-h-screen bg-bg-primary flex flex-col items-center px-4 pt-10">
+    <main className="min-h-screen flex flex-col items-center px-4 pt-10">
       {!isUnlocked ? (
         <div className="flex flex-col items-center justify-center min-h-[80vh] gap-6 w-full max-w-md">
           <h1 className="text-3xl font-bold text-text-primary mb-4">
