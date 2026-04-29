@@ -3,9 +3,10 @@ use keepass::DatabaseKey;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::sync::Mutex;
+use std::thread;
 use tauri::State;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 struct EntryData {
     title: String,
     username: String,
@@ -42,18 +43,25 @@ fn get_entries_from_group(group: &Group) -> Vec<EntryData> {
     entries
 }
 
+fn open_db(path: &str, password: &str) -> Result<Database, String> {
+    let mut file = File::open(path).map_err(|e| format!("Failed to open file: {}", e))?;
+    let key = DatabaseKey::new().with_password(password);
+    Database::open(&mut file, key).map_err(|e| format!("Failed to open database: {}", e))
+}
+
 #[tauri::command]
-fn unlock_database(
+async fn unlock_database(
     path: String,
     password: String,
-    state: State<AppState>,
+    state: State<'_, AppState>,
 ) -> Result<String, String> {
     println!("Unlocking database: {}", path);
 
-    let mut file = File::open(&path).map_err(|e| format!("Failed to open file: {}", e))?;
-    let key = DatabaseKey::new().with_password(&password);
-    let db =
-        Database::open(&mut file, key).map_err(|e| format!("Failed to open database: {}", e))?;
+    let path_clone = path.clone();
+    let db_result = thread::spawn(move || open_db(&path_clone, &password))
+        .join()
+        .unwrap();
+    let db = db_result.map_err(|e| e.to_string())?;
 
     let mut db_lock = state.db.lock().map_err(|e| e.to_string())?;
     *db_lock = Some(db);
@@ -61,11 +69,13 @@ fn unlock_database(
     let mut path_lock = state.file_path.lock().map_err(|e| e.to_string())?;
     *path_lock = Some(path);
 
+    println!("Database unlocked successfully");
+
     Ok("Database unlocked successfully".to_string())
 }
 
 #[tauri::command]
-fn close_database(state: State<AppState>) -> Result<(), String> {
+async fn close_database(state: State<'_, AppState>) -> Result<(), String> {
     let mut db_lock = state.db.lock().map_err(|e| e.to_string())?;
     *db_lock = None;
     let mut path_lock = state.file_path.lock().map_err(|e| e.to_string())?;
@@ -74,7 +84,7 @@ fn close_database(state: State<AppState>) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn get_entries(state: State<AppState>) -> Result<Vec<EntryData>, String> {
+async fn get_entries(state: State<'_, AppState>) -> Result<Vec<EntryData>, String> {
     let db_lock = state.db.lock().map_err(|e| e.to_string())?;
     let db = db_lock.as_ref().ok_or("Database not unlocked")?;
 

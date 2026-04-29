@@ -22,6 +22,7 @@ function App() {
   const [selectedEntry, setSelectedEntry] = useState<EntryData | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   let clipboardTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -38,6 +39,7 @@ function App() {
 
   async function unlock() {
     setError("");
+    setIsLoading(true);
     try {
       const result = await invoke<string>("unlock_database", {
         path: filePath,
@@ -48,6 +50,8 @@ function App() {
       loadEntries();
     } catch (e) {
       setError(String(e));
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -93,6 +97,9 @@ function App() {
 
   return (
     <main className="min-h-screen flex flex-col items-center px-4 pt-10">
+      {isLoading && (
+        <div className="fixed bottom-0 left-0 right-0 h-1 bg-accent loading-bar z-50" />
+      )}
       {!isUnlocked ? (
         <div className="flex flex-col items-center justify-center min-h-[80vh] gap-6 w-full max-w-md">
           <h1 className="text-3xl font-bold text-text-primary mb-4">
