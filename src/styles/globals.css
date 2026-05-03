@@ -1,0 +1,42 @@
+/**
+ * Global styles and theme configuration
+ */
+
+@import "tailwindcss";
+
+@theme {
+  --color-bg-primary: #1e1e2e;
+  --color-bg-secondary: #11111b;
+  --color-bg-tertiary: #313244;
+  --color-text-primary: #cdd6f4;
+  --color-text-secondary: #a6adc8;
+  --color-accent: #89b4fa;
+  --color-accent-hover: #b4befe;
+  --color-danger: #f38ba8;
+  --color-danger-hover: #eba0ac;
+  --color-border: #45475a;
+}
+
+/* Global base styles */
+body {
+  background-color: var(--color-bg-primary);
+  background-image: radial-gradient(
+    var(--color-bg-tertiary) 1px,
+    transparent 1px
+  );
+  background-size: 20px 20px;
+  color: var(--color-text-primary);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+input,
+textarea,
+button {
+  font-family: inherit;
+}
+
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-bg-primary);
+}

@@ -115,16 +115,17 @@ The built application will be in `src-tauri/target/release/betterkeepass`.
 
 ---
 
-## Roadmap
+## Todo
 
-- [ ] Add new entry
-- [ ] Edit existing entry
-- [ ] Delete entry with confirmation
-- [ ] Auto-lock after inactivity
-- [ ] Settings panel (auto-lock time, theme preferences)
-- [ ] Entry categories/folders
-- [ ] Responsive layout improvements
-- [ ] Custom app icon
+- Add new entry
+- Edit existing entry
+- Unlock animation
+- Delete entry with confirmation
+- Auto-lock after inactivity
+- Settings panel (auto-lock time, theme preferences)
+- Entry categories/folders
+- Responsive layout improvements
+- Custom app icon
 
 ---
 

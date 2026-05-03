@@ -1,0 +1,33 @@
+/**
+ * Animation definitions
+ */
+
+@keyframes loading-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Loading bar animation */
+.loading-bar {
+  overflow: hidden;
+}
+
+.loading-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-accent-hover),
+    transparent
+  );
+  animation: loading-bar 1.5s infinite;
+}
