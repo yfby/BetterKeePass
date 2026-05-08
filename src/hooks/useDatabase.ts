@@ -2,7 +2,7 @@
  * Custom hook for managing database operations
  */
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   unlockDatabase as apiUnlockDatabase,
   getEntries as apiGetEntries,
@@ -73,6 +73,65 @@ export function useDatabase(): UseDatabaseReturn {
   const clearError = () => {
     setError("");
   };
+
+  // keep a ref to the latest closeDatabase so the effect can call it without
+  // needing to depend on the function identity
+  const closeDatabaseRef = useRef<() => Promise<void> | null>(null);
+  closeDatabaseRef.current = closeDatabase;
+
+  // Auto-lock: when the DB is unlocked start a timer that will automatically
+  // close the database after a period of inactivity. Activity resets the timer.
+  // Default timeout: 5 minutes (300000 ms).
+  const AUTO_LOCK_MS = 5 * 60 * 1000;
+
+  useEffect(() => {
+    if (!isUnlocked) return;
+
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const scheduleLock = () => {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+      timeoutId = window.setTimeout(async () => {
+        try {
+          // use ref to call the latest closeDatabase without recreating this effect
+          if (closeDatabaseRef.current) await closeDatabaseRef.current();
+          console.info("Database auto-locked due to inactivity");
+        } catch (e) {
+          console.error("Auto-lock failed:", e);
+        }
+      }, AUTO_LOCK_MS);
+    };
+
+    const activityHandler = () => scheduleLock();
+
+    // Listen for common user interactions that indicate activity.
+    const events = [
+      "mousemove",
+      "mousedown",
+      "keydown",
+      "touchstart",
+      "scroll",
+    ];
+
+    for (const ev of events) {
+      window.addEventListener(ev, activityHandler);
+    }
+
+    // start the timer
+    scheduleLock();
+
+    return () => {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+      for (const ev of events) {
+        window.removeEventListener(ev, activityHandler);
+      }
+    };
+    // We intentionally depend on isUnlocked and closeDatabase
+  }, [isUnlocked, closeDatabase]);
 
   return {
     isUnlocked,
