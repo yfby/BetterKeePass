@@ -2,7 +2,20 @@
 
 A lightweight KeePass password manager built with Tauri + React + Rust.
 
-## Features
+
+---
+
+## ToDo
+
+- Add new entry
+- Edit existing entry
+- Unlock animation
+- Delete entry with confirmation
+- Auto-lock after inactivity
+- Settings panel (auto-lock time, theme preferences)
+- Entry categories/folders
+- Responsive layout improvements
+- Custom app icon
 
 ### Core Functionality
 - **Open Database** - Select `.kdbx` file via native file dialog
@@ -45,29 +58,6 @@ A lightweight KeePass password manager built with Tauri + React + Rust.
 - `@tauri-apps/plugin-dialog` - Native file dialogs
 - `@tauri-apps/plugin-clipboard-manager` - Clipboard access
 
----
-
-## Project Structure
-
-```
-BetterKeePass/
-├── src/                      # Frontend (React)
-│   ├── App.tsx               # Main app component
-│   ├── App.css               # Global styles + CSS variables
-│   └── main.tsx              # React entry point
-│
-├── src-tauri/                # Backend (Rust)
-│   ├── src/
-│   │   ├── lib.rs            # Tauri commands
-│   │   └── main.rs          # Rust entry point
-│   ├── icons/                # App icons
-│   ├── Cargo.toml           # Rust dependencies
-│   └── capabilities/         # Tauri permissions
-│
-├── public/                   # Static assets
-├── index.html                # HTML entry point
-└── package.json              # Node dependencies
-```
 
 ---
 
@@ -112,20 +102,6 @@ The built application will be in `src-tauri/target/release/betterkeepass`.
 5. Click an entry to view details
 6. Use **Copy** buttons to copy credentials to clipboard
 7. Click **Close Database** to lock the app
-
----
-
-## Todo
-
-- Add new entry
-- Edit existing entry
-- Unlock animation
-- Delete entry with confirmation
-- Auto-lock after inactivity
-- Settings panel (auto-lock time, theme preferences)
-- Entry categories/folders
-- Responsive layout improvements
-- Custom app icon
 
 ---
 

@@ -24,6 +24,6 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri-plugin-dialog = "2"
 tauri-plugin-clipboard-manager = "2"
-keepass = "0.10.5"
+keepass = "0.12.5"
 uuid = "1"
 
