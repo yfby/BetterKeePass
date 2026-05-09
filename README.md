@@ -91,26 +91,5 @@ pnpm tauri build
 
 The built application will be in `src-tauri/target/release/betterkeepass`.
 
----
 
-## Usage
-
-1. Click **Open Database** and select a `.kdbx` file
-2. Enter your master password
-3. Click **Unlock** to decrypt and view entries
-4. Use **Search** to filter entries
-5. Click an entry to view details
-6. Use **Copy** buttons to copy credentials to clipboard
-7. Click **Close Database** to lock the app
-
----
-
-## Note on Write Support
-
-The underlying [keepass](https://crates.io/crates/keepass) crate has **experimental** write support for KDBX4 files. Full save functionality (add/edit/delete entries) will be enabled once the crate's write API stabilizes.
-
----
-
-## License
-
-[MIT](LICENSE)
+# ENJOY :)

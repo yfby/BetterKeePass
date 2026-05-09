@@ -16,14 +16,16 @@ pub struct EntryData {
 
 impl EntryData {
     /// Converts a KeePass entry to EntryData
-    pub fn from_keepass_entry(entry: &keepass::db::Entry) -> Self {
+    pub fn from_keepass_entry(entry: &keepass::db::EntryRef) -> Self {
+        // Use the public getter methods on EntryRef/Entry to access fields
         EntryData {
             title: entry.get("Title").unwrap_or_default().to_string(),
-            username: entry.get("Username").unwrap_or_default().to_string(),
+            username: entry.get("UserName").or(entry.get("Username")).unwrap_or_default().to_string(),
             password: entry.get("Password").unwrap_or_default().to_string(),
-            url: entry.get("URL").unwrap_or_default().to_string(),
+            url: entry.get("URL").or(entry.get("Url")).unwrap_or_default().to_string(),
             notes: entry.get("Notes").unwrap_or_default().to_string(),
-            uuid: format!("{:?}", entry.uuid),
+            // EntryRef doesn't expose a public `uuid` field; get the EntryId then its uuid
+            uuid: format!("{}", entry.id()),
         }
     }
 }

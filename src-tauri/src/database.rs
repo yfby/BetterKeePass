@@ -2,7 +2,7 @@
  * Database operations module
  */
 
-use keepass::db::{Database, Group};
+use keepass::db::{Database, GroupRef};
 use keepass::DatabaseKey;
 use std::fs::File;
 
@@ -20,17 +20,18 @@ pub fn open_database(path: &str, password: &str) -> AppResult<Database> {
 }
 
 /// Recursively extracts all entries from a group and its subgroups
-pub fn extract_entries_from_group(group: &Group) -> Vec<EntryData> {
+pub fn extract_entries_from_group(group: &GroupRef) -> Vec<EntryData> {
     let mut entries = Vec::new();
 
-    // Add entries from current group
-    for entry in &group.entries {
-        entries.push(EntryData::from_keepass_entry(entry));
+    // Add entries from current group using the public iterator API
+    for entry in group.entries() {
+        // entry is an EntryRef; pass a reference so the converter can borrow it
+        entries.push(EntryData::from_keepass_entry(&entry));
     }
 
     // Recursively add entries from subgroups
-    for subgroup in &group.groups {
-        entries.extend(extract_entries_from_group(subgroup));
+    for subgroup in group.groups() {
+        entries.extend(extract_entries_from_group(&subgroup));
     }
 
     entries
@@ -38,6 +39,7 @@ pub fn extract_entries_from_group(group: &Group) -> Vec<EntryData> {
 
 /// Extracts all entries from the database
 pub fn get_all_entries(db: &Database) -> AppResult<Vec<EntryData>> {
-    let entries = extract_entries_from_group(&db.root);
+    // Use the public root() accessor which returns a GroupRef
+    let entries = extract_entries_from_group(&db.root());
     Ok(entries)
 }
